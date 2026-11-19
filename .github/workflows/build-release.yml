@@ -1,0 +1,43 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: StitchKeys-MacroRecorder.exe
+            asset_name: StitchKeys-MacroRecorder-Windows.exe
+          - os: macos-latest
+            artifact: StitchKeys-MacroRecorder
+            asset_name: StitchKeys-MacroRecorder-Mac
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pynput pyinstaller
+
+      - name: Build executable
+        run: |
+          python -m PyInstaller --onefile --windowed --name StitchKeys-MacroRecorder macro-recorder/macro_recorder.py
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ matrix.artifact }}
+          name_template: ${{ matrix.asset_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
