@@ -1008,11 +1008,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var BB_R = 3, BB_NX = 14, BB_NW = 15, BB_NH = 4, BB_BH = 44;
 
     var BB_CATS = [
-        { id: 'trigger',  label: 'Triggers',  color: '#c27820' },
-        { id: 'keyboard', label: 'Keyboard',  color: '#2d6cb8' },
-        { id: 'system',   label: 'System',    color: '#7040c0' },
-        { id: 'layer',    label: 'Layer',     color: '#b85818' },
-        { id: 'flow',     label: 'Flow',      color: '#1a9068' }
+        { id: 'trigger',  label: 'Triggers',  color: '#c27820', shape: 'hat'   },
+        { id: 'keyboard', label: 'Keyboard',  color: '#2d6cb8', shape: 'tab'   },
+        { id: 'system',   label: 'System',    color: '#7040c0', shape: 'round' },
+        { id: 'layer',    label: 'Layer',     color: '#b85818', shape: 'step'  },
+        { id: 'flow',     label: 'Flow',      color: '#1a9068', shape: 'arrow' }
     ];
     var BB_BLOCKS = {
         on_press:       { cat: 'trigger',  hat: true,  label: 'When key is pressed',       inputs: [] },
@@ -3477,6 +3477,38 @@ document.addEventListener("DOMContentLoaded", function () {
         return 'M' + r + ' 0 Q' + (w*0.12) + ' ' + (-h*0.38) + ' ' + (w*0.5) + ' ' + (-h*0.34) + ' Q' + (w*0.88) + ' ' + (-h*0.28) + ' ' + w + ' ' + r + ' L' + w + ' ' + (h-r) + ' Q' + w + ' ' + h + ' ' + (w-r) + ' ' + h + ' L' + (nx+nw) + ' ' + h + ' L' + (nx+nw) + ' ' + (h+nh) + ' L' + nx + ' ' + (h+nh) + ' L' + nx + ' ' + h + ' L' + r + ' ' + h + ' Q0 ' + h + ' 0 ' + (h-r) + ' L0 ' + r + ' Q0 0 ' + r + ' 0 Z';
     }
 
+    function bbSvgPathRound(w, h) {
+        var nx = 14, nw = 15, nh = 4, rr = h / 2;
+        return 'M1 0 L' + nx + ' 0 L' + nx + ' ' + (-nh) + ' L' + (nx+nw) + ' ' + (-nh) + ' L' + (nx+nw) + ' 0 L' + w + ' 0 A' + rr + ' ' + rr + ' 0 0 1 ' + w + ' ' + h + ' L' + (nx+nw) + ' ' + h + ' L' + (nx+nw) + ' ' + (h+nh) + ' L' + nx + ' ' + (h+nh) + ' L' + nx + ' ' + h + ' L1 ' + h + ' Q0 ' + h + ' 0 ' + (h-1) + ' L0 1 Q0 0 1 0 Z';
+    }
+    function bbSvgPathStep(w, h) {
+        var nx = 14, nw = 15, nh = 4, sd = 7;
+        var s1y = Math.round(h * 0.4), s2y = Math.round(h * 0.7);
+        return 'M1 0 L' + nx + ' 0 L' + nx + ' ' + (-nh) + ' L' + (nx+nw) + ' ' + (-nh) + ' L' + (nx+nw) + ' 0 L' + w + ' 0 L' + w + ' ' + s1y + ' L' + (w-sd) + ' ' + s1y + ' L' + (w-sd) + ' ' + s2y + ' L' + (w-sd*2) + ' ' + s2y + ' L' + (w-sd*2) + ' ' + h + ' L' + (nx+nw) + ' ' + h + ' L' + (nx+nw) + ' ' + (h+nh) + ' L' + nx + ' ' + (h+nh) + ' L' + nx + ' ' + h + ' L1 ' + h + ' Q0 ' + h + ' 0 ' + (h-1) + ' L0 1 Q0 0 1 0 Z';
+    }
+    function bbSvgPathArrow(w, h) {
+        var nx = 14, nw = 15, nh = 4, ar = 10;
+        return 'M1 0 L' + nx + ' 0 L' + nx + ' ' + (-nh) + ' L' + (nx+nw) + ' ' + (-nh) + ' L' + (nx+nw) + ' 0 L' + w + ' 0 L' + (w+ar) + ' ' + (h/2) + ' L' + w + ' ' + h + ' L' + (nx+nw) + ' ' + h + ' L' + (nx+nw) + ' ' + (h+nh) + ' L' + nx + ' ' + (h+nh) + ' L' + nx + ' ' + h + ' L1 ' + h + ' Q0 ' + h + ' 0 ' + (h-1) + ' L0 1 Q0 0 1 0 Z';
+    }
+    function bbSvgPathTab(w, h) {
+        var nx = 14, nw = 15, nh = 4, tw = 7, th = Math.round(h * 0.42);
+        var ty = Math.round((h - th) / 2);
+        return 'M1 0 L' + nx + ' 0 L' + nx + ' ' + (-nh) + ' L' + (nx+nw) + ' ' + (-nh) + ' L' + (nx+nw) + ' 0 L' + (w-1) + ' 0 Q' + w + ' 0 ' + w + ' 1 L' + w + ' ' + ty + ' L' + (w+tw) + ' ' + ty + ' L' + (w+tw) + ' ' + (ty+th) + ' L' + w + ' ' + (ty+th) + ' L' + w + ' ' + (h-1) + ' Q' + w + ' ' + h + ' ' + (w-1) + ' ' + h + ' L' + (nx+nw) + ' ' + h + ' L' + (nx+nw) + ' ' + (h+nh) + ' L' + nx + ' ' + (h+nh) + ' L' + nx + ' ' + h + ' L1 ' + h + ' Q0 ' + h + ' 0 ' + (h-1) + ' L0 1 Q0 0 1 0 Z';
+    }
+    function bbSvgPathForCat(catId, w, h, isHat) {
+        if (isHat) return bbSvgPathHat(w, h);
+        for (var i = 0; i < BB_CATS.length; i++) {
+            if (BB_CATS[i].id === catId) {
+                switch (BB_CATS[i].shape) {
+                    case 'round': return bbSvgPathRound(w, h);
+                    case 'step':  return bbSvgPathStep(w, h);
+                    case 'arrow': return bbSvgPathArrow(w, h);
+                    case 'tab':   return bbSvgPathTab(w, h);
+                }
+            }
+        }
+        return bbSvgPathStack(w, h);
+    }
     function bbCatColor(catId) {
         for (var i = 0; i < BB_CATS.length; i++) {
             if (BB_CATS[i].id === catId) return BB_CATS[i].color;
@@ -3652,7 +3684,7 @@ document.addEventListener("DOMContentLoaded", function () {
         wrap.style.cursor = 'grab';
 
         var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', String(pw + 4));
+        svg.setAttribute('width', String(pw + 24));
         svg.setAttribute('height', String(svgH));
         svg.style.overflow = 'visible';
         svg.style.display = 'block';
@@ -3662,7 +3694,7 @@ document.addEventListener("DOMContentLoaded", function () {
         g.setAttribute('transform', 'translate(2,' + gy + ')');
 
         var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', isHat ? bbSvgPathHat(pw, ph) : bbSvgPathStack(pw, ph));
+        path.setAttribute('d', bbSvgPathForCat(cat.id, pw, ph, isHat));
         path.setAttribute('fill', color);
         path.setAttribute('stroke', 'rgba(0,0,0,0.3)');
         path.setAttribute('stroke-width', '1');
@@ -3761,7 +3793,7 @@ document.addEventListener("DOMContentLoaded", function () {
         wrap.style.marginBottom = mb + 'px';
 
         var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', String(w + 4));
+        svg.setAttribute('width', String(w + 24));
         svg.setAttribute('height', String(svgH));
         svg.style.overflow = 'visible';
         svg.style.display = 'block';
@@ -3770,7 +3802,7 @@ document.addEventListener("DOMContentLoaded", function () {
         g.setAttribute('transform', 'translate(2,' + gy + ')');
 
         var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', isHat ? bbSvgPathHat(w, h) : bbSvgPathStack(w, h));
+        path.setAttribute('d', bbSvgPathForCat(def.cat, w, h, isHat));
         path.setAttribute('fill', color);
         path.setAttribute('stroke', 'rgba(0,0,0,0.35)');
         path.setAttribute('stroke-width', '1');
