@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
@@ -34,10 +37,11 @@ jobs:
         run: |
           python -m PyInstaller --onefile --windowed --name StitchKeys-MacroRecorder macro-recorder/macro_recorder.py
 
+      - name: Rename artifact
+        shell: bash
+        run: mv dist/${{ matrix.artifact }} dist/${{ matrix.asset_name }}
+
       - name: Upload to release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/${{ matrix.artifact }}
-          name_template: ${{ matrix.asset_name }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: dist/${{ matrix.asset_name }}
