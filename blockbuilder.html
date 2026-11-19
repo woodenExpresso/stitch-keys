@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StitchKeys Block Builder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#1a1a1a;color:#fff;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none}
+
+/* TOP BAR */
+.topbar{height:44px;background:#111;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:10}
+.topbar-logo{font-size:14px;font-weight:700;letter-spacing:-.3px}
+.topbar-logo span{color:#64b5f6}
+.topbar-key{background:#1e1e1e;border:1px solid #333;border-radius:6px;padding:3px 10px;font-size:11px;color:#aaa;min-width:120px}
+.topbar-key span{color:#fff;font-weight:600}
+.topbar-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
+.tbtn{padding:5px 12px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:filter .15s}
+.tbtn:hover{filter:brightness(1.15)}
+.tbtn-rec{background:#c62828;color:#fff;display:flex;align-items:center;gap:5px}
+.tbtn-rec .rdot{width:7px;height:7px;border-radius:50%;background:#fff}
+.tbtn-rec.on .rdot{animation:blink .9s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.tbtn-compile{background:#2e7d32;color:#fff}
+.tbtn-clear{background:#333;color:#ccc}
+
+/* MAIN */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:230px;background:#161616;display:flex;flex-direction:column;flex-shrink:0;border-right:1px solid #2a2a2a}
+.cat-list{padding:6px;display:flex;flex-direction:column;gap:1px;border-bottom:1px solid #2a2a2a;flex-shrink:0}
+.cat-btn{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:16px;border:none;background:none;color:#999;font-size:11px;font-weight:700;cursor:pointer;text-align:left;width:100%;transition:background .12s}
+.cat-btn:hover{background:rgba(255,255,255,.07)}
+.cat-btn.on{background:rgba(255,255,255,.13);color:#fff}
+.cat-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0}
+.palette{flex:1;overflow-y:auto;padding:6px 6px 12px}
+.palette::-webkit-scrollbar{width:3px}
+.palette::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+.pal-sec{display:none;flex-direction:column;gap:4px}
+.pal-sec.on{display:flex}
+.pal-block{cursor:grab;display:flex;align-items:center}
+.pal-block:active{cursor:grabbing}
+
+/* CANVAS */
+.canvas-wrap{flex:1;position:relative;overflow:hidden;background:#e9e9e9;background-image:radial-gradient(circle,#bbb 1px,transparent 1px);background-size:20px 20px}
+.canvas{position:absolute;width:6000px;height:6000px;top:0;left:0;transform-origin:0 0}
+.b-wrap{position:absolute;cursor:grab}
+.b-wrap:active{cursor:grabbing}
+.b-wrap.dragging{opacity:.82;z-index:900}
+.b-ghost{position:fixed;pointer-events:none;z-index:1000;opacity:.85}
+
+/* RIGHT PANEL */
+.rpanel{width:200px;background:#161616;border-left:1px solid #2a2a2a;display:flex;flex-direction:column;flex-shrink:0}
+.rp-head{padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#666;border-bottom:1px solid #2a2a2a}
+.key-grid{padding:10px;display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.key-row{display:flex;gap:4px}
+.key-tile{width:34px;height:34px;border-radius:6px;background:#1e1e1e;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#666;cursor:pointer;transition:all .12s;flex-direction:column;line-height:1.1}
+.key-tile:hover{border-color:#555;color:#999}
+.key-tile.on{border-color:#1976d2;background:rgba(25,118,210,.2);color:#64b5f6}
+.key-tile.has{border-color:#388e3c}
+.output-box{flex:1;overflow:auto;padding:8px}
+.output-box pre{font-size:9px;color:#4fc3f7;white-space:pre-wrap;word-break:break-all;line-height:1.5}
+
+/* MODALS */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:2000}
+.overlay.h{display:none}
+.modal{background:#222;border-radius:12px;padding:22px;max-width:460px;width:92%;border:1px solid #3a3a3a}
+.modal h3{font-size:15px;margin-bottom:10px}
+.modal p{font-size:12px;color:#aaa;line-height:1.65;margin-bottom:8px}
+.modal a{color:#64b5f6}
+.modal-row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.mbtn{padding:6px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer}
+.mbtn-s{background:#383838;color:#ccc}
+.mbtn-p{background:#c62828;color:#fff}
+.mbtn-g{background:#2e7d32;color:#fff}
+
+/* REC BANNER */
+.rec-banner{position:fixed;top:52px;left:50%;transform:translateX(-50%);background:#c62828;color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:700;z-index:1500;display:none;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.rec-banner.on{display:flex}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:blink .9s infinite;flex-shrink:0}
+.rec-timer{font-family:monospace;font-size:13px}
+.rec-stop{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:10px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer}
+
+/* Cleanup btns */
+.cleanup-wrap{position:absolute;display:flex;flex-direction:column;gap:4px}
+.cleanup-btn{background:#7f1a1a;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.cleanup-btn:hover{background:#c62828}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">StitchKeys <span>Block Builder</span></div>
+  <div class="topbar-key" id="topbarKey">Key: <span>none selected</span></div>
+  <div class="topbar-actions">
+    <button class="tbtn tbtn-rec" id="recBtn"><div class="rdot"></div>Record</button>
+    <button class="tbtn tbtn-compile" id="compileBtn">▶ Compile</button>
+    <button class="tbtn tbtn-clear" id="clearBtn">Clear</button>
+  </div>
+</div>
+
+<div class="rec-banner" id="recBanner">
+  <div class="rec-dot"></div>
+  <span id="recMsg">Recording...</span>
+  <span class="rec-timer" id="recTimer">00:00</span>
+  <button class="rec-stop" id="recStopBtn">■ Stop</button>
+</div>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="cat-list" id="catList"></div>
+    <div class="palette" id="palette"></div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-wrap" id="canvasWrap">
+    <div class="canvas" id="canvas"></div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="rpanel">
+    <div class="rp-head">Keys</div>
+    <div class="key-grid" id="keyGrid"></div>
+    <div class="rp-head">JSON Output</div>
+    <div class="output-box"><pre id="outputPre">// Click ▶ Compile</pre></div>
+  </div>
+</div>
+
+<!-- RECORD MODAL -->
+<div class="overlay h" id="recModal">
+  <div class="modal">
+    <h3>⚠ Recording Limitation</h3>
+    <p>Recording captures keyboard and mouse input while this browser tab is focused. If you switch to another app (like Blender or Premiere), the browser will lose focus and keyboard recording will stop.</p>
+    <p>For full recording across all apps, install the StitchKeys Desktop App:<br>
+    <a href="https://github.com/woodenExpresso/zmk-config" target="_blank">Download Desktop App — github.com/woodenExpresso/zmk-config</a></p>
+    <div class="modal-row">
+      <button class="mbtn mbtn-s" id="recCancel">Cancel</button>
+      <button class="mbtn mbtn-p" id="recConfirm">I understand, start recording</button>
+    </div>
+  </div>
+</div>
+
+<!-- COMPILE MODAL -->
+<div class="overlay h" id="compModal">
+  <div class="modal" style="max-width:580px">
+    <h3>Compiled Output</h3>
+    <div style="background:#111;border-radius:8px;padding:12px;max-height:360px;overflow:auto;margin-bottom:12px">
+      <pre id="compPre" style="font-size:11px;color:#4fc3f7;white-space:pre;"></pre>
+    </div>
+    <div class="modal-row">
+      <button class="mbtn mbtn-s" id="compClose">Close</button>
+      <button class="mbtn mbtn-g" id="compCopy">Copy JSON</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════
+const R   = 3;    // corner radius
+const NX  = 14;   // notch x offset
+const NW  = 15;   // notch width
+const NH  = 4;    // notch height
+const BH  = 44;   // standard block height
+const ARM = 28;   // C-block arm width
+const SNAP= 20;   // snap threshold px
+
+// ═══════════════════════════════════════════
+// CATEGORIES
+// ═══════════════════════════════════════════
+const CATS = [
+  { id:'triggers',  label:'Triggers',   color:'#f9a825' },
+  { id:'keyboard',  label:'Keyboard',   color:'#1565c0' },
+  { id:'mouse',     label:'Mouse',      color:'#2e7d32' },
+  { id:'system',    label:'System',     color:'#6a1b9a' },
+  { id:'layers',    label:'Layers',     color:'#e65100' },
+  { id:'flow',      label:'Flow',       color:'#c47c00' },
+  { id:'logic',     label:'Logic',      color:'#00695c' },
+  { id:'variables', label:'Variables',  color:'#004d40' },
+  { id:'mymacros',  label:'My Macros',  color:'#b71c1c' },
+];
+
+// ═══════════════════════════════════════════
+// BLOCK DEFINITIONS
+// type: hat | stack | cblock | boolean | reporter
+// parts: [{t, v?, n?, opts?}]
+//   t: label | text | number | dropdown | shortcut | bslot
+// ═══════════════════════════════════════════
+const DEFS = [
+  // TRIGGERS
+  { id:'t_press',   cat:'triggers', type:'hat',   color:'#f9a825',
+    parts:[{t:'label',v:'When key is pressed'}],
+    comp:(f)=>({trigger:'on_press'}) },
+  { id:'t_held',    cat:'triggers', type:'hat',   color:'#f9a825',
+    parts:[{t:'label',v:'When key held for'},{t:'number',n:'ms',v:'500'},{t:'label',v:'ms'}],
+    comp:(f)=>({trigger:'on_hold',hold_ms:+f.ms}) },
+  { id:'t_dtap',    cat:'triggers', type:'hat',   color:'#f9a825',
+    parts:[{t:'label',v:'When double-tapped within'},{t:'number',n:'ms',v:'300'},{t:'label',v:'ms'}],
+    comp:(f)=>({trigger:'on_double_tap',window_ms:+f.ms}) },
+  { id:'t_release', cat:'triggers', type:'hat',   color:'#f9a825',
+    parts:[{t:'label',v:'When key is released'}],
+    comp:()=>({trigger:'on_release'}) },
+  { id:'t_layer',   cat:'triggers', type:'hat',   color:'#f9a825',
+    parts:[{t:'label',v:'When layer'},{t:'dropdown',n:'layer',v:'1',opts:['1','2','3','4']},{t:'label',v:'activates'}],
+    comp:(f)=>({trigger:'on_layer',layer:+f.layer}) },
+
+  // KEYBOARD
+  { id:'k_short',   cat:'keyboard', type:'stack', color:'#1565c0',
+    parts:[{t:'label',v:'Press'},{t:'shortcut',n:'keys',v:'ctrl+c'}],
+    comp:(f)=>({type:'shortcut',keys:f.keys.split('+').filter(Boolean)}) },
+  { id:'k_type',    cat:'keyboard', type:'stack', color:'#1565c0',
+    parts:[{t:'label',v:'Type'},{t:'text',n:'text',v:'Hello'}],
+    comp:(f)=>({type:'type_text',text:f.text,slow:false}) },
+  { id:'k_slow',    cat:'keyboard', type:'stack', color:'#1565c0',
+    parts:[{t:'label',v:'Type'},{t:'text',n:'text',v:'Hello'},{t:'label',v:'slowly'}],
+    comp:(f)=>({type:'type_text',text:f.text,slow:true}) },
+  { id:'k_down',    cat:'keyboard', type:'stack', color:'#1565c0',
+    parts:[{t:'label',v:'Press and hold'},{t:'text',n:'key',v:'shift'}],
+    comp:(f)=>({type:'key_down',key:f.key}) },
+  { id:'k_up',      cat:'keyboard', type:'stack', color:'#1565c0',
+    parts:[{t:'label',v:'Release'},{t:'text',n:'key',v:'shift'}],
+    comp:(f)=>({type:'key_up',key:f.key}) },
+  { id:'k_tap',     cat:'keyboard', type:'stack', color:'#1565c0',
+    parts:[{t:'label',v:'Tap'},{t:'text',n:'key',v:'space'},{t:'number',n:'n',v:'3'},{t:'label',v:'times'}],
+    comp:(f)=>({type:'tap_key',key:f.key,times:+f.n}) },
+  { id:'k_special', cat:'keyboard', type:'stack', color:'#1565c0',
+    parts:[{t:'label',v:'Press'},{t:'dropdown',n:'key',v:'Enter',opts:['Enter','Escape','Tab','Backspace','Delete','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','PageUp','PageDown','PrintScreen','Insert']}],
+    comp:(f)=>({type:'special_key',key:f.key}) },
+  { id:'k_alttab',  cat:'keyboard', type:'stack', color:'#1565c0',
+    parts:[{t:'label',v:'Switch window'}],
+    comp:()=>({type:'shortcut',keys:['alt','tab']}) },
+  { id:'k_winname', cat:'keyboard', type:'stack', color:'#1565c0',
+    parts:[{t:'label',v:'Switch to window named'},{t:'text',n:'name',v:'Chrome'}],
+    comp:(f)=>({type:'switch_window',name:f.name}) },
+
+  // MOUSE
+  { id:'m_abs',     cat:'mouse', type:'stack', color:'#2e7d32',
+    parts:[{t:'label',v:'Move mouse to X:'},{t:'number',n:'x',v:'0'},{t:'label',v:'Y:'},{t:'number',n:'y',v:'0'}],
+    comp:(f)=>({type:'mouse_move_absolute',x:+f.x,y:+f.y}) },
+  { id:'m_rel',     cat:'mouse', type:'stack', color:'#2e7d32',
+    parts:[{t:'label',v:'Move mouse by X:'},{t:'number',n:'x',v:'0'},{t:'label',v:'Y:'},{t:'number',n:'y',v:'0'}],
+    comp:(f)=>({type:'mouse_move_relative',x:+f.x,y:+f.y}) },
+  { id:'m_click',   cat:'mouse', type:'stack', color:'#2e7d32',
+    parts:[{t:'label',v:'Click'},{t:'dropdown',n:'btn',v:'Left',opts:['Left','Right','Middle']}],
+    comp:(f)=>({type:'mouse_click',button:f.btn.toLowerCase()}) },
+  { id:'m_dbl',     cat:'mouse', type:'stack', color:'#2e7d32',
+    parts:[{t:'label',v:'Double-click'},{t:'dropdown',n:'btn',v:'Left',opts:['Left','Right','Middle']}],
+    comp:(f)=>({type:'mouse_double_click',button:f.btn.toLowerCase()}) },
+  { id:'m_down',    cat:'mouse', type:'stack', color:'#2e7d32',
+    parts:[{t:'label',v:'Hold mouse button'},{t:'dropdown',n:'btn',v:'Left',opts:['Left','Right','Middle']}],
+    comp:(f)=>({type:'mouse_down',button:f.btn.toLowerCase()}) },
+  { id:'m_up',      cat:'mouse', type:'stack', color:'#2e7d32',
+    parts:[{t:'label',v:'Release mouse button'},{t:'dropdown',n:'btn',v:'Left',opts:['Left','Right','Middle']}],
+    comp:(f)=>({type:'mouse_up',button:f.btn.toLowerCase()}) },
+  { id:'m_scroll',  cat:'mouse', type:'stack', color:'#2e7d32',
+    parts:[{t:'label',v:'Scroll'},{t:'dropdown',n:'dir',v:'Down',opts:['Up','Down']},{t:'label',v:'by'},{t:'number',n:'n',v:'3'},{t:'label',v:'clicks'}],
+    comp:(f)=>({type:'mouse_scroll',direction:f.dir.toLowerCase(),clicks:+f.n}) },
+  { id:'m_corner',  cat:'mouse', type:'stack', color:'#2e7d32',
+    parts:[{t:'label',v:'Move mouse to'},{t:'dropdown',n:'pos',v:'Center',opts:['Top-Left','Top-Right','Bottom-Left','Bottom-Right','Center']}],
+    comp:(f)=>({type:'mouse_corner',position:f.pos.toLowerCase().replace('-','_')}) },
+
+  // SYSTEM
+  { id:'s_app',     cat:'system', type:'stack', color:'#6a1b9a',
+    parts:[{t:'label',v:'Open application'},{t:'text',n:'app',v:'Blender'}],
+    comp:(f)=>({type:'open_app',app:f.app}) },
+  { id:'s_url',     cat:'system', type:'stack', color:'#6a1b9a',
+    parts:[{t:'label',v:'Open URL'},{t:'text',n:'url',v:'https://'}],
+    comp:(f)=>({type:'open_url',url:f.url}) },
+  { id:'s_vol',     cat:'system', type:'stack', color:'#6a1b9a',
+    parts:[{t:'label',v:'Volume'},{t:'dropdown',n:'action',v:'Up',opts:['Up','Down','Mute','Set to %']}],
+    comp:(f)=>({type:'volume',action:f.action.toLowerCase().replace(' ','_')}) },
+  { id:'s_media',   cat:'system', type:'stack', color:'#6a1b9a',
+    parts:[{t:'label',v:'Media'},{t:'dropdown',n:'action',v:'Play/Pause',opts:['Play/Pause','Next','Previous','Stop']}],
+    comp:(f)=>({type:'media',action:f.action.toLowerCase().replace('/','_')}) },
+  { id:'s_shot',    cat:'system', type:'stack', color:'#6a1b9a',
+    parts:[{t:'label',v:'Screenshot'},{t:'dropdown',n:'mode',v:'Full screen',opts:['Full screen','Window','Selection']}],
+    comp:(f)=>({type:'screenshot',mode:f.mode.toLowerCase().replace(' ','_')}) },
+
+  // LAYERS
+  { id:'l_switch',  cat:'layers', type:'stack', color:'#e65100',
+    parts:[{t:'label',v:'Switch to layer'},{t:'dropdown',n:'n',v:'1',opts:['1','2','3','4']}],
+    comp:(f)=>({type:'layer_switch',layer:+f.n}) },
+  { id:'l_toggle',  cat:'layers', type:'stack', color:'#e65100',
+    parts:[{t:'label',v:'Toggle layer'},{t:'dropdown',n:'n',v:'1',opts:['1','2','3','4']}],
+    comp:(f)=>({type:'layer_toggle',layer:+f.n}) },
+  { id:'l_hold',    cat:'layers', type:'stack', color:'#e65100',
+    parts:[{t:'label',v:'Hold layer'},{t:'dropdown',n:'n',v:'1',opts:['1','2','3','4']},{t:'label',v:'while key held'}],
+    comp:(f)=>({type:'layer_hold',layer:+f.n}) },
+
+  // FLOW
+  { id:'f_wait',    cat:'flow', type:'stack',  color:'#c47c00',
+    parts:[{t:'label',v:'Wait'},{t:'number',n:'ms',v:'100'},{t:'label',v:'ms'}],
+    comp:(f)=>({type:'wait',ms:+f.ms}) },
+  { id:'f_repeat',  cat:'flow', type:'cblock', color:'#c47c00',
+    parts:[{t:'label',v:'Repeat'},{t:'number',n:'n',v:'10'},{t:'label',v:'times'}],
+    comp:(f,ch)=>({type:'repeat',times:+f.n,actions:ch}) },
+  { id:'f_stop',    cat:'flow', type:'stack',  color:'#c47c00',
+    parts:[{t:'label',v:'Stop script'}],
+    comp:()=>({type:'stop'}) },
+
+  // LOGIC
+  { id:'lo_if',     cat:'logic', type:'cblock',  color:'#00695c',
+    parts:[{t:'label',v:'If'},{t:'bslot',n:'cond'},{t:'label',v:'then'}],
+    comp:(f,ch)=>({type:'if',condition:null,actions:ch}) },
+  { id:'lo_held',   cat:'logic', type:'boolean', color:'#00897b',
+    parts:[{t:'label',v:'Key is being held'}],
+    comp:()=>({type:'cond_key_held'}) },
+  { id:'lo_lactive',cat:'logic', type:'boolean', color:'#00897b',
+    parts:[{t:'label',v:'Layer'},{t:'dropdown',n:'n',v:'1',opts:['1','2','3','4']},{t:'label',v:'is active'}],
+    comp:(f)=>({type:'cond_layer_active',layer:+f.n}) },
+  { id:'lo_time',   cat:'logic', type:'boolean', color:'#00897b',
+    parts:[{t:'label',v:'Time'},{t:'text',n:'from',v:'09:00'},{t:'label',v:'–'},{t:'text',n:'to',v:'17:00'}],
+    comp:(f)=>({type:'cond_time',from:f.from,to:f.to}) },
+
+  // VARIABLES
+  { id:'v_set',     cat:'variables', type:'stack',    color:'#004d40',
+    parts:[{t:'label',v:'Set'},{t:'text',n:'name',v:'myVar'},{t:'label',v:'to'},{t:'text',n:'val',v:'0'}],
+    comp:(f)=>({type:'var_set',name:f.name,value:f.val}) },
+  { id:'v_get',     cat:'variables', type:'reporter', color:'#00695c',
+    parts:[{t:'text',n:'name',v:'myVar'}],
+    comp:(f)=>({type:'var_get',name:f.name}) },
+
+  // MY MACROS
+  { id:'mm_run',    cat:'mymacros', type:'stack', color:'#b71c1c',
+    parts:[{t:'label',v:'Run macro'},{t:'text',n:'name',v:'My Macro'}],
+    comp:(f)=>({type:'run_macro',name:f.name}) },
+];
+
+// ═══════════════════════════════════════════
+// SVG PATH GENERATORS
+// ═══════════════════════════════════════════
+function dk(c,a){const n=parseInt(c.slice(1),16),rr=Math.max(0,(n>>16)-a),gg=Math.max(0,((n>>8)&255)-a),bb=Math.max(0,(n&255)-a);return'#'+((rr<<16)|(gg<<8)|bb).toString(16).padStart(6,'0')}
+
+function pathStack(w,h){
+  return`M${R} 0 L${NX} 0 L${NX} ${-NH} L${NX+NW} ${-NH} L${NX+NW} 0 L${w-R} 0 Q${w} 0 ${w} ${R} L${w} ${h-R} Q${w} ${h} ${w-R} ${h} L${NX+NW} ${h} L${NX+NW} ${h+NH} L${NX} ${h+NH} L${NX} ${h} L${R} ${h} Q0 ${h} 0 ${h-R} L0 ${R} Q0 0 ${R} 0 Z`
+}
+function pathHat(w,h){
+  return`M${R} 0 Q${w*.12} ${-h*.65} ${w*.5} ${-h*.58} Q${w*.88} ${-h*.5} ${w} ${R} L${w} ${h-R} Q${w} ${h} ${w-R} ${h} L${NX+NW} ${h} L${NX+NW} ${h+NH} L${NX} ${h+NH} L${NX} ${h} L${R} ${h} Q0 ${h} 0 ${h-R} L0 ${R} Q0 0 ${R} 0 Z`
+}
+function pathCBlock(w,h,ih){
+  const bh=h, T=h+ih+bh;
+  return`M${R} 0 L${NX} 0 L${NX} ${-NH} L${NX+NW} ${-NH} L${NX+NW} 0 L${w-R} 0 Q${w} 0 ${w} ${R} L${w} ${h-R} Q${w} ${h} ${w-R} ${h} L${ARM+NX+NW} ${h} L${ARM+NX+NW} ${h+NH} L${ARM+NX} ${h+NH} L${ARM+NX} ${h} L${ARM+R} ${h} Q${ARM} ${h} ${ARM} ${h+R} L${ARM} ${h+ih-R} Q${ARM} ${h+ih} ${ARM+R} ${h+ih} L${ARM+NX} ${h+ih} L${ARM+NX} ${h+ih-NH} L${ARM+NX+NW} ${h+ih-NH} L${ARM+NX+NW} ${h+ih} L${w-R} ${h+ih} Q${w} ${h+ih} ${w} ${h+ih+R} L${w} ${T-R} Q${w} ${T} ${w-R} ${T} L${NX+NW} ${T} L${NX+NW} ${T+NH} L${NX} ${T+NH} L${NX} ${T} L${R} ${T} Q0 ${T} 0 ${T-R} L0 ${R} Q0 0 ${R} 0 Z`
+}
+function pathBoolean(w,h){
+  const p=10;
+  return`M${p} 0 L${w-p} 0 L${w} ${h/2} L${w-p} ${h} L${p} ${h} L0 ${h/2} Z`
+}
+function pathReporter(w,h){
+  const rr=h/2;
+  return`M${rr} 0 L${w-rr} 0 Q${w} 0 ${w} ${rr} Q${w} ${h} ${w-rr} ${h} L${rr} ${h} Q0 ${h} 0 ${rr} Q0 0 ${rr} 0 Z`
+}
+
+// ═══════════════════════════════════════════
+// MEASURE
+// ═══════════════════════════════════════════
+function partW(p){
+  if(p.t==='label') return p.v.length*6.8+6;
+  if(p.t==='number') return 36;
+  if(p.t==='text') return 72;
+  if(p.t==='shortcut') return 84;
+  if(p.t==='dropdown') return Math.max(52,(p.v||p.opts[0]).length*6.5+22);
+  if(p.t==='bslot') return 54;
+  return 0;
+}
+function blockW(def){
+  let w=10;
+  def.parts.forEach(p=>w+=partW(p)+3);
+  return Math.max(def.type==='boolean'?120:def.type==='reporter'?80:148,w+10);
+}
+
+// ═══════════════════════════════════════════
+// CREATE BLOCK ELEMENT
+// ═══════════════════════════════════════════
+function mkBlock(def,fvals,palette){
+  fvals=fvals||{};
+  const w=blockW(def), h=BH, ih=72;
+  const type=def.type, color=def.type==='boolean'?dk(def.color,0):def.color;
+  const shadow=dk(color,45);
+
+  // SVG dimensions
+  let svgW=w+6, svgH, gy;
+  if(type==='hat')      { svgH=h+h*.6+NH+8; gy=h*.58+4; }
+  else if(type==='cblock'){ svgH=h+ih+h+NH+8; gy=NH+4; }
+  else if(type==='boolean'||type==='reporter'){ svgH=h+4; gy=2; }
+  else                  { svgH=h+NH+8; gy=NH+4; }
+
+  const wrap=document.createElement('div');
+  wrap.className='b-wrap';
+  wrap.dataset.defId=def.id;
+  wrap.style.position=palette?'relative':'absolute';
+
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width',svgW);
+  svg.setAttribute('height',svgH);
+  svg.style.overflow='visible';
+  svg.style.display='block';
+
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('transform',`translate(3,${gy})`);
+
+  // Block shape
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  let d='';
+  if(type==='hat')      d=pathHat(w,h);
+  else if(type==='cblock') d=pathCBlock(w,h,ih);
+  else if(type==='boolean') d=pathBoolean(w,h);
+  else if(type==='reporter') d=pathReporter(w,h);
+  else                  d=pathStack(w,h);
+  path.setAttribute('d',d);
+  path.setAttribute('fill',color);
+  path.setAttribute('stroke',shadow);
+  path.setAttribute('stroke-width','1.5');
+  path.style.filter='drop-shadow(0 2px 4px rgba(0,0,0,.35))';
+  g.appendChild(path);
+
+  // Parts
+  const midY = type==='boolean'||type==='reporter' ? h/2 : h/2;
+  let cx=12;
+  def.parts.forEach(p=>{
+    const pw=partW(p);
+    if(p.t==='label'){
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',cx+pw/2); t.setAttribute('y',midY+4);
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('font-family','Helvetica Neue,Arial,sans-serif');
+      t.setAttribute('font-size','11.5');
+      t.setAttribute('font-weight','700');
+      t.setAttribute('fill','rgba(255,255,255,.95)');
+      t.style.pointerEvents='none';
+      t.textContent=p.v;
+      g.appendChild(t);
+    } else if(p.t==='number'||p.t==='text'||p.t==='shortcut'){
+      const fo=document.createElementNS('http://www.w3.org/2000/svg','foreignObject');
+      fo.setAttribute('x',cx); fo.setAttribute('y',midY-10);
+      fo.setAttribute('width',pw); fo.setAttribute('height',20);
+      const inp=document.createElement('input');
+      inp.type='text';
+      inp.value=fvals[p.n]!=null?fvals[p.n]:(p.v||'');
+      inp.dataset.f=p.n||'';
+      inp.style.cssText=`width:100%;height:100%;border:none;border-radius:3px;padding:0 4px;font-size:11px;font-weight:600;text-align:center;background:#fff;color:#222;outline:none;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)`;
+      if(p.t==='shortcut'){
+        inp.placeholder='ctrl+c';
+        inp.addEventListener('keydown',e=>{
+          e.preventDefault();e.stopPropagation();
+          const m=[];
+          if(e.ctrlKey)m.push('ctrl');
+          if(e.metaKey)m.push('cmd');
+          if(e.shiftKey)m.push('shift');
+          if(e.altKey)m.push('alt');
+          const k=e.key.toLowerCase();
+          if(!['control','shift','alt','meta'].includes(k))m.push(k);
+          inp.value=m.join('+');
+        });
+      }
+      inp.addEventListener('mousedown',e=>e.stopPropagation());
+      fo.appendChild(inp);
+      g.appendChild(fo);
+    } else if(p.t==='dropdown'){
+      const fo=document.createElementNS('http://www.w3.org/2000/svg','foreignObject');
+      fo.setAttribute('x',cx); fo.setAttribute('y',midY-10);
+      fo.setAttribute('width',pw); fo.setAttribute('height',20);
+      const sel=document.createElement('select');
+      sel.dataset.f=p.n||'';
+      sel.style.cssText=`width:100%;height:100%;border:none;border-radius:3px;padding:0 2px;font-size:11px;font-weight:700;background:#fff;color:#222;cursor:pointer;outline:none`;
+      (p.opts||[]).forEach(opt=>{
+        const o=document.createElement('option');
+        o.value=opt; o.textContent=opt;
+        if((fvals[p.n]||p.v)===opt)o.selected=true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('mousedown',e=>e.stopPropagation());
+      fo.appendChild(sel);
+      g.appendChild(fo);
+    } else if(p.t==='bslot'){
+      const sp=document.createElementNS('http://www.w3.org/2000/svg','path');
+      const sh=18, sp2=6;
+      sp.setAttribute('d',`M${sp2} 0 L${pw-sp2} 0 L${pw} ${sh/2} L${pw-sp2} ${sh} L${sp2} ${sh} L0 ${sh/2} Z`);
+      sp.setAttribute('transform',`translate(${cx},${midY-sh/2})`);
+      sp.setAttribute('fill','rgba(255,255,255,.25)');
+      sp.setAttribute('stroke','rgba(255,255,255,.4)');
+      sp.setAttribute('stroke-width','1');
+      sp.style.pointerEvents='none';
+      g.appendChild(sp);
+    }
+    cx+=pw+3;
+  });
+
+  svg.appendChild(g);
+  wrap.appendChild(svg);
+  wrap._def=def;
+  wrap._svgY=gy;
+  wrap._bh=h;
+  wrap._bw=w;
+  wrap._ih=ih;
+  return wrap;
+}
+
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let blocks=[]; // {id, el, x, y, defId}
+let uid=0;
+function nid(){return 'b'+(uid++)}
+let selectedKey=null;
+let panX=0,panY=0,panning=false,panSX=0,panSY=0;
+
+const canvasWrap=document.getElementById('canvasWrap');
+const canvas=document.getElementById('canvas');
+
+// ═══════════════════════════════════════════
+// DRAG
+// ═══════════════════════════════════════════
+let drag=null; // {ghost, defId, fromCanvas, block?, offsetX, offsetY}
+
+function startPalDrag(e,defId){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  e.preventDefault();
+  const def=DEFS.find(d=>d.id===defId);
+  if(!def)return;
+  const ghost=mkBlock(def,{},false);
+  ghost.classList.add('b-ghost');
+  ghost.style.left=(e.clientX-ghost._bw/2)+'px';
+  ghost.style.top=(e.clientY-ghost._bh/2)+'px';
+  document.body.appendChild(ghost);
+  drag={ghost,defId,fromCanvas:false,offsetX:ghost._bw/2,offsetY:ghost._bh/2};
+}
+
+function startCanvasDrag(e,block){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  e.preventDefault();
+  e.stopPropagation();
+  const rect=block.el.getBoundingClientRect();
+  drag={ghost:null,defId:block.defId,fromCanvas:true,block,
+    offsetX:e.clientX-rect.left,offsetY:e.clientY-rect.top};
+  block.el.style.zIndex='900';
+  block.el.classList.add('dragging');
+}
+
+document.addEventListener('mousemove',e=>{
+  if(panning){
+    panX=e.clientX-panSX; panY=e.clientY-panSY;
+    canvas.style.transform=`translate(${panX}px,${panY}px)`;
+    return;
+  }
+  if(!drag)return;
+  if(drag.fromCanvas){
+    const wr=canvasWrap.getBoundingClientRect();
+    const x=e.clientX-wr.left-panX-drag.offsetX;
+    const y=e.clientY-wr.top -panY-drag.offsetY;
+    drag.block.el.style.left=x+'px';
+    drag.block.el.style.top =y+'px';
+    drag.block.x=x; drag.block.y=y;
+  } else {
+    drag.ghost.style.left=(e.clientX-drag.offsetX)+'px';
+    drag.ghost.style.top =(e.clientY-drag.offsetY)+'px';
+  }
+});
+
+document.addEventListener('mouseup',e=>{
+  if(panning){panning=false;return;}
+  if(!drag)return;
+  if(!drag.fromCanvas){
+    // Dropping from palette
+    const wr=canvasWrap.getBoundingClientRect();
+    if(e.clientX>=wr.left&&e.clientX<=wr.right&&e.clientY>=wr.top&&e.clientY<=wr.bottom){
+      const x=e.clientX-wr.left-panX-drag.offsetX;
+      const y=e.clientY-wr.top -panY-drag.offsetY;
+      placeBlock(drag.defId,x,y,{});
+    }
+    drag.ghost.remove();
+  } else {
+    drag.block.el.style.zIndex='';
+    drag.block.el.classList.remove('dragging');
+    snapBlock(drag.block);
+  }
+  drag=null;
+});
+
+// Canvas pan on background mousedown
+canvasWrap.addEventListener('mousedown',e=>{
+  if(e.target===canvasWrap||e.target===canvas){
+    panning=true;
+    panSX=e.clientX-panX; panSY=e.clientY-panY;
+  }
+});
+
+// ═══════════════════════════════════════════
+// PLACE & SNAP
+// ═══════════════════════════════════════════
+function placeBlock(defId,x,y,fvals,overrideColor){
+  const def=DEFS.find(d=>d.id===defId);
+  if(!def)return null;
+  const id=nid();
+  const el=mkBlock(def,fvals,false);
+  el.style.left=x+'px'; el.style.top=y+'px';
+  if(overrideColor){
+    const p=el.querySelector('path');
+    if(p){p.setAttribute('fill',overrideColor);p.setAttribute('stroke',dk(overrideColor,45));}
+  }
+  canvas.appendChild(el);
+  const b={id,defId,x,y,el};
+  blocks.push(b);
+  el.addEventListener('mousedown',e=>startCanvasDrag(e,b));
+  return b;
+}
+
+function snapBlock(b){
+  // Find nearest output notch to snap to
+  const bYoff=b.el._svgY||0;
+  const bH=b.el._bh||BH;
+  // Top of dropped block = b.y + bYoff (where input notch is)
+  const inY=b.y+bYoff;
+  const inX=b.x+NX;
+
+  let best=null, bestD=SNAP;
+  blocks.forEach(other=>{
+    if(other.id===b.id)return;
+    const oYoff=other.el._svgY||0;
+    const oH=other.el._bh||BH;
+    // Output notch of 'other' is at y = other.y + oYoff + oH + NH
+    const outY=other.y+oYoff+oH;
+    const outX=other.x+NX;
+    const dist=Math.sqrt((inX-outX)**2+(inY-outY)**2);
+    if(dist<bestD){bestD=dist;best=other;}
+  });
+
+  if(best){
+    const oYoff=best.el._svgY||0;
+    const oH=best.el._bh||BH;
+    const newX=best.x;
+    const newY=best.y+oYoff+oH-b.el._svgY;
+    b.x=newX; b.y=newY;
+    b.el.style.left=newX+'px'; b.el.style.top=newY+'px';
+  }
+}
+
+// ═══════════════════════════════════════════
+// COMPILE
+// ═══════════════════════════════════════════
+function getFields(el){
+  const f={};
+  el.querySelectorAll('input,select').forEach(i=>{if(i.dataset.f)f[i.dataset.f]=i.value;});
+  return f;
+}
+
+function compileScript(){
+  // Find hat blocks
+  const hats=blocks.filter(b=>{const d=DEFS.find(x=>x.id===b.defId);return d&&d.type==='hat';});
+  if(!hats.length)return[{error:'No trigger block found. Add a yellow hat block to start.'}];
+
+  return hats.map(hat=>{
+    const hatDef=DEFS.find(d=>d.id===hat.defId);
+    const trigData=hatDef.comp(getFields(hat.el));
+
+    // Collect blocks in vertical order below this hat (within 30px x alignment)
+    const chain=blocks
+      .filter(b=>{
+        const d=DEFS.find(x=>x.id===b.defId);
+        return b.id!==hat.id && d && d.type!=='hat' && Math.abs(b.x-hat.x)<30 && b.y>hat.y;
+      })
+      .sort((a,c)=>a.y-c.y);
+
+    const actions=chain.map(b=>{
+      const d=DEFS.find(x=>x.id===b.defId);
+      return d?d.comp(getFields(b.el),[]):null;
+    }).filter(Boolean);
+
+    return{key_address:selectedKey||'0x20',...trigData,actions};
+  });
+}
+
+// ═══════════════════════════════════════════
+// RECORD MODE
+// ═══════════════════════════════════════════
+let recording=false,recEvents=[],recT0=0,recInterval=null;
+
+function startRec(){
+  recording=true; recEvents=[]; recT0=Date.now();
+  document.getElementById('recBanner').classList.add('on');
+  document.getElementById('recBtn').classList.add('on');
+  document.getElementById('recMsg').textContent='Recording...';
+  let s=0;
+  recInterval=setInterval(()=>{
+    s++; const m=String(Math.floor(s/60)).padStart(2,'0'),sec=String(s%60).padStart(2,'0');
+    document.getElementById('recTimer').textContent=m+':'+sec;
+  },1000);
+  document.addEventListener('keydown',onRK);
+  document.addEventListener('mousedown',onRM);
+  document.addEventListener('wheel',onRW,{passive:true});
+  let lastMM=0;
+  window._recMM=e=>{const n=Date.now();if(n-lastMM>50){recEvents.push({t:'mm',x:e.clientX,y:e.clientY,ts:n-recT0});lastMM=n;}};
+  document.addEventListener('mousemove',window._recMM);
+}
+function onRK(e){recEvents.push({t:'kd',key:e.key,ts:Date.now()-recT0});}
+function onRM(e){recEvents.push({t:'md',btn:e.button,ts:Date.now()-recT0});}
+function onRW(e){recEvents.push({t:'wh',dy:e.deltaY,ts:Date.now()-recT0});}
+
+function stopRec(){
+  recording=false;
+  clearInterval(recInterval);
+  document.getElementById('recBanner').classList.remove('on');
+  document.getElementById('recBtn').classList.remove('on');
+  document.getElementById('recTimer').textContent='00:00';
+  document.removeEventListener('keydown',onRK);
+  document.removeEventListener('mousedown',onRM);
+  document.removeEventListener('wheel',onRW);
+  document.removeEventListener('mousemove',window._recMM);
+  buildRecBlocks(recEvents);
+}
+
+function buildRecBlocks(evs){
+  if(!evs.length)return;
+  let sx=60, sy=60;
+  placeBlock('t_press',sx,sy,{});
+  sy+=BH+NH+10;
+  let lastTs=0;
+  const BNAMES={0:'Left',1:'Middle',2:'Right'};
+  evs.forEach(ev=>{
+    const gap=ev.ts-lastTs;
+    if(gap>200&&lastTs>0){placeBlock('f_wait',sx,sy,{ms:String(Math.round(gap))},'#7f1a1a');sy+=BH+NH+10;}
+    lastTs=ev.ts;
+    if(ev.t==='kd'){placeBlock('k_short',sx,sy,{keys:ev.key.toLowerCase()},'#7f1a1a');sy+=BH+NH+10;}
+    else if(ev.t==='mm'){placeBlock('m_abs',sx,sy,{x:String(ev.x),y:String(ev.y)},'#7f1a1a');sy+=BH+NH+10;}
+    else if(ev.t==='md'){placeBlock('m_click',sx,sy,{btn:BNAMES[ev.btn]||'Left'},'#7f1a1a');sy+=BH+NH+10;}
+    else if(ev.t==='wh'){placeBlock('m_scroll',sx,sy,{dir:ev.dy>0?'Down':'Up',n:'3'},'#7f1a1a');sy+=BH+NH+10;}
+  });
+  // Cleanup buttons
+  const wrap=document.createElement('div');
+  wrap.className='cleanup-wrap';
+  wrap.style.left=sx+'px'; wrap.style.top=(sy+8)+'px';
+  ['Remove mouse moves','Merge wait blocks','Remove short waits (<100ms)'].forEach(label=>{
+    const btn=document.createElement('button');
+    btn.className='cleanup-btn'; btn.textContent=label;
+    btn.addEventListener('click',()=>{
+      if(label.startsWith('Remove mouse')){
+        blocks=blocks.filter(b=>{if(b.defId==='m_abs'){b.el.remove();return false;}return true;});
+      } else if(label.startsWith('Remove short')){
+        blocks=blocks.filter(b=>{
+          if(b.defId==='f_wait'){const v=parseInt(b.el.querySelector('input')?.value||'0');if(v<100){b.el.remove();return false;}}
+          return true;
+        });
+      }
+      wrap.remove();
+    });
+    wrap.appendChild(btn);
+  });
+  canvas.appendChild(wrap);
+}
+
+// ═══════════════════════════════════════════
+// KEY GRID
+// ═══════════════════════════════════════════
+function buildKeyGrid(){
+  const g=document.getElementById('keyGrid');
+  const rows=[[0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15],[16,17,18,19]];
+  rows.forEach(row=>{
+    const r=document.createElement('div'); r.className='key-row';
+    row.forEach(slot=>{
+      const t=document.createElement('div'); t.className='key-tile';
+      t.dataset.slot=slot;
+      t.innerHTML=`${slot+1}<span style="font-size:8px;color:#555">S${slot}</span>`;
+      t.addEventListener('click',()=>{
+        document.querySelectorAll('.key-tile').forEach(x=>x.classList.remove('on'));
+        t.classList.add('on');
+        selectedKey='0x'+(0x20+slot).toString(16);
+        document.querySelector('#topbarKey span').textContent='Slot '+slot+' ('+selectedKey+')';
+      });
+      r.appendChild(t);
+    });
+    g.appendChild(r);
+  });
+}
+
+// ═══════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════
+function buildSidebar(){
+  const catList=document.getElementById('catList');
+  const palette=document.getElementById('palette');
+  CATS.forEach((cat,i)=>{
+    // Category button
+    const btn=document.createElement('button');
+    btn.className='cat-btn'+(i===0?' on':'');
+    btn.dataset.cat=cat.id;
+    btn.innerHTML=`<span class="cat-dot" style="background:${cat.color}"></span>${cat.label}`;
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('on'));
+      document.querySelectorAll('.pal-sec').forEach(s=>s.classList.remove('on'));
+      btn.classList.add('on');
+      document.getElementById('ps-'+cat.id)?.classList.add('on');
+    });
+    catList.appendChild(btn);
+
+    // Palette section
+    const sec=document.createElement('div');
+    sec.className='pal-sec'+(i===0?' on':'');
+    sec.id='ps-'+cat.id;
+    DEFS.filter(d=>d.cat===cat.id).forEach(def=>{
+      const wrap=document.createElement('div');
+      wrap.className='pal-block';
+      const el=mkBlock(def,{},true);
+      wrap.appendChild(el);
+      wrap.addEventListener('mousedown',e=>startPalDrag(e,def.id));
+      sec.appendChild(wrap);
+    });
+    palette.appendChild(sec);
+  });
+}
+
+// ═══════════════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════════════
+document.getElementById('recBtn').addEventListener('click',()=>{
+  if(recording){stopRec();return;}
+  document.getElementById('recModal').classList.remove('h');
+});
+document.getElementById('recCancel').addEventListener('click',()=>{
+  document.getElementById('recModal').classList.add('h');
+});
+document.getElementById('recConfirm').addEventListener('click',()=>{
+  document.getElementById('recModal').classList.add('h');
+  startRec();
+});
+document.getElementById('recStopBtn').addEventListener('click',stopRec);
+
+document.getElementById('compileBtn').addEventListener('click',()=>{
+  const result=compileScript();
+  const json=JSON.stringify(result.length===1?result[0]:result,null,2);
+  document.getElementById('compPre').textContent=json;
+  document.getElementById('outputPre').textContent=json;
+  document.getElementById('compModal').classList.remove('h');
+});
+document.getElementById('compClose').addEventListener('click',()=>document.getElementById('compModal').classList.add('h'));
+document.getElementById('compCopy').addEventListener('click',()=>{
+  navigator.clipboard.writeText(document.getElementById('compPre').textContent);
+  document.getElementById('compCopy').textContent='Copied!';
+  setTimeout(()=>document.getElementById('compCopy').textContent='Copy JSON',1500);
+});
+document.getElementById('clearBtn').addEventListener('click',()=>{
+  if(!confirm('Clear all blocks from canvas?'))return;
+  blocks.forEach(b=>b.el.remove()); blocks=[];
+  canvas.querySelectorAll('.cleanup-wrap').forEach(w=>w.remove());
+});
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+buildSidebar();
+buildKeyGrid();
+
+// Starter blocks
+setTimeout(()=>{
+  const hb=placeBlock('t_press',40,40,{});
+  placeBlock('k_short',40,40+(hb._bh||BH)+NH+8,{keys:'ctrl+c'});
+  placeBlock('f_wait',40,40+(hb._bh||BH)+NH+8+(BH+NH+8),{ms:'150'});
+  placeBlock('k_short',40,40+(hb._bh||BH)+NH+8+(BH+NH+8)*2,{keys:'ctrl+v'});
+},50);
+</script>
+</body>
+</html>

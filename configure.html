@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; form-action 'self' https://script.google.com; frame-ancestors 'none';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Configure Your Keys — Stitch Keys</title>
+    <meta name="description" content="Configure your Stitch Keys — assign shortcuts, macros, and complex tasks to each key. Build a layout that fits the way you work.">
+    <meta name="keywords" content="stitch keys, stitchkeys, configure macro keys, custom keyboard layout, programmable macro keys">
+    <meta name="author" content="Stitch Keys">
+    <meta property="og:title" content="Configure Your Keys — Stitch Keys">
+    <meta property="og:description" content="Assign any shortcut or complex task to your Stitch Keys and build a layout that fits the way you work.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Configure Your Keys — Stitch Keys">
+    <meta name="twitter:description" content="Assign any shortcut or complex task to your Stitch Keys.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Exo+2:wght@400;600;700&family=Rubik:wght@400;500&display=swap">
+    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="configure.css?v=6">
+</head>
+<body class="page--configure">
+    <div class="header-fill" aria-hidden="true"></div>
+    <header class="page-header">
+        <button id="menuToggle" class="menu-button" aria-label="Toggle navigation menu">
+            <span class="hamburger"></span>
+        </button>
+        <nav class="page-tabs" aria-label="Site sections">
+            <a href="index.html" class="page-tab">Home</a>
+            <a href="configure.html" class="page-tab page-tab--active">Configure</a>
+            <a href="signup.html" class="page-tab">Stay Updated</a>
+        </nav>
+        <div class="resize-handle header-handle" data-resize="header" aria-hidden="true"></div>
+    </header>
+
+    <div class="app-shell">
+        <div class="nav-bg" id="navBg" aria-hidden="true"></div>
+        <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
+        <aside class="side-nav" id="sideNav" aria-hidden="true"></aside>
+
+        <main class="main-content" id="mainContent">
+            <div class="cfg-wrap">
+
+                <!-- Step 1: Connect -->
+                <div id="cfgStepConnect">
+                    <h2 class="cfg-title">Configure Your Keys</h2>
+                    <p class="cfg-hint">Plug in your Stitch Keys hub via USB-C, then click Connect.</p>
+                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                        <button class="cfg-btn" id="cfgConnectBtn">Connect Keyboard</button>
+                        <button class="cfg-btn cfg-btn--secondary" id="cfgDemoBtn">Try Demo (no hardware)</button>
+                    </div>
+                    <p class="cfg-status" id="cfgConnectStatus"></p>
+                    <p class="cfg-browser-note" id="cfgBrowserNote"></p>
+
+                    <div class="cfg-divider">or load a saved layout</div>
+                    <div class="cfg-load-row">
+                        <input class="cfg-code-input" id="cfgLayoutCode" type="text"
+                               placeholder="Layout code  e.g. AB12CD"
+                               maxlength="6" autocomplete="off" spellcheck="false">
+                        <button class="cfg-btn" id="cfgLoadBtn">Load</button>
+                    </div>
+                    <p class="cfg-status" id="cfgLoadStatus"></p>
+                </div>
+
+                <!-- Step 2: Assign shortcuts -->
+                <div id="cfgStepAssign" class="cfg-step--hidden">
+                    <!-- Configure view -->
+                    <div id="cfgViewConfigure">
+                        <div class="cfg-layout-header">
+                            <span class="cfg-layout-label">KEY LAYOUT</span>
+                            <span class="cfg-layout-hint">click a key to configure</span>
+                        </div>
+
+                        <!-- Profile banner — appears after serial fingerprint is detected -->
+                        <div class="cfg-profile-banner cfg-step--hidden" id="cfgProfileBanner">
+                            <span class="cfg-profile-dot" id="cfgProfileDot"></span>
+                            <span class="cfg-profile-name" id="cfgProfileName">New layout</span>
+                            <input class="cfg-profile-input cfg-step--hidden" id="cfgProfileInput"
+                                   type="text" placeholder="Name this layout…" maxlength="40" autocomplete="off">
+                            <div class="cfg-profile-actions">
+                                <button class="cfg-btn cfg-btn--sm cfg-step--hidden" id="cfgProfileSaveBtn">Save Profile</button>
+                                <button class="cfg-btn cfg-btn--secondary cfg-btn--sm cfg-step--hidden" id="cfgProfileRenameBtn">Rename</button>
+                                <button class="cfg-btn cfg-btn--secondary cfg-btn--sm cfg-step--hidden" id="cfgProfileUpdateBtn">Update</button>
+                                <button class="cfg-btn cfg-btn--sm cfg-step--hidden" id="cfgProfileConfirmBtn">Save</button>
+                                <button class="cfg-btn cfg-btn--secondary cfg-btn--sm cfg-step--hidden" id="cfgProfileCancelBtn">Cancel</button>
+                            </div>
+                        </div>
+
+                        <!-- Hub visual -->
+                        <div class="cfg-hub-wrap" id="cfgHubWrap">
+                            <div class="cfg-hub" id="cfgHub">
+                                <div class="cfg-hub-pads" id="cfgHubPads"></div>
+                                <div class="cfg-hub-inner">
+                                    <span class="cfg-hub-name">MacroHub</span>
+                                    <span class="cfg-hub-title">Hub</span>
+                                    <span class="cfg-hub-count" id="cfgHubCount">— keys</span>
+                                    <div class="cfg-hub-led"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Channel connector lines (JS-rendered) -->
+                        <div class="cfg-hub-cables" id="cfgHubCables"></div>
+                        <div class="cfg-grid" id="cfgGrid"></div>
+                        <div class="cfg-assign-actions">
+                            <button class="cfg-btn cfg-step--hidden" id="cfgPushBtn">Push to Device</button>
+                            <button class="cfg-btn" id="cfgBuildBtn">Build Firmware</button>
+                            <button class="cfg-btn cfg-btn--secondary" id="cfgSaveBtn">Save Layout</button>
+                            <button class="cfg-btn cfg-btn--secondary" id="cfgMapBtn">Map Layouts</button>
+                            <span class="cfg-status" id="cfgSaveStatus"></span>
+                        </div>
+
+                        <!-- Layout mapper panel -->
+                        <div class="cfg-mapper cfg-step--hidden" id="cfgMapper">
+                            <div class="cfg-mapper-header">
+                                <div class="cfg-mapper-left">
+                                    <div class="cfg-mapper-title-row">
+                                        <span class="cfg-mapper-title">Map Layouts</span>
+                                        <span class="cfg-mapper-listen" id="cfgMapperListen">
+                                            <span class="cfg-mapper-listen-dot"></span>
+                                            listening
+                                        </span>
+                                    </div>
+                                    <div class="cfg-mapper-layouts-bar" id="cfgMapperLayoutsBar"></div>
+                                </div>
+                                <button class="cfg-mapper-close-btn" id="cfgMapperClose">Done</button>
+                            </div>
+                            <div class="kmap-grid-wrap" id="kmapGridWrap">
+                                <div class="kmap-grid" id="kmapGrid"></div>
+                                <div class="kmap-popup cfg-step--hidden" id="kmapPopup">
+                                    <div class="kmap-popup-box">
+                                        <div class="kmap-popup-title">Assign Key</div>
+                                        <p class="kmap-popup-msg" id="kmapPopupMsg">Press the physical key that belongs in this position</p>
+                                        <div class="kmap-popup-btns">
+                                            <button class="cfg-btn cfg-btn--secondary cfg-btn--sm" id="kmapPopupSkip" style="display:none">Continue without</button>
+                                            <button class="cfg-btn cfg-btn--secondary cfg-btn--sm" id="kmapPopupCancel">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action picker (shown when a key is selected) -->
+                        <div class="cfg-picker cfg-step--hidden" id="cfgPicker">
+
+                            <!-- Bottom bar -->
+                            <div class="cfg-cat-bar" id="cfgCatBar">
+                                <button class="cfg-cat-tab" data-pane="cfgPaneLayer">To Layer</button>
+                                <button class="cfg-cat-tab" data-pane="cfgPaneKeyboard">Keyboard</button>
+                                <button class="cfg-cat-tab" data-pane="cfgPaneSpecial">Special</button>
+                                <button class="cfg-cat-tab" data-pane="cfgPaneBluetooth">Bluetooth</button>
+                                <button class="cfg-cat-tab" data-pane="cfgPaneSeq">Sequence</button>
+                                <button class="cfg-cat-tab" data-pane="cfgPanePrefs">Preferences</button>
+                                <button class="cfg-cat-tab cfg-cat-tab--bb" id="cfgTabBlockBuilderBtn">Block Builder</button>
+                            </div>
+
+                            <!-- Keyboard pane -->
+                            <div class="cfg-picker-pane cfg-step--hidden" id="cfgPaneKeyboard">
+                                <div class="cfg-combo-bar" id="cfgComboBar">
+                                    <div class="cfg-combo-chips" id="cfgComboChips">
+                                        <span class="cfg-combo-placeholder">Press a key or select below</span>
+                                    </div>
+                                    <div class="cfg-combo-btns">
+                                        <button class="cfg-btn cfg-btn--secondary cfg-btn--sm" id="cfgComboClear">Clear</button>
+                                        <button class="cfg-btn cfg-btn--sm" id="cfgComboAssign" disabled>Assign</button>
+                                    </div>
+                                </div>
+                                <div class="cfg-kb-layout">
+                                    <div class="cfg-kb-badges">
+                                        <button class="cfg-badge cfg-badge--active" data-badge="letters">Letters</button>
+                                        <button class="cfg-badge" data-badge="numbers">Numbers</button>
+                                        <button class="cfg-badge" data-badge="other">Other</button>
+                                    </div>
+                                    <div class="cfg-kb-grid" id="cfgKbGrid"></div>
+                                </div>
+                            </div>
+
+                            <!-- Special pane -->
+                            <div class="cfg-picker-pane cfg-step--hidden" id="cfgPaneSpecial">
+                                <div class="cfg-kb-layout">
+                                    <div class="cfg-kb-badges" id="cfgSpecialBadges"></div>
+                                    <div class="cfg-picker-grid" id="cfgPickerGrid"></div>
+                                </div>
+                            </div>
+
+                            <!-- Preferences pane -->
+                            <div class="cfg-picker-pane cfg-step--hidden" id="cfgPanePrefs">
+                                <div class="cfg-prefs-wrap">
+                                    <div class="cfg-prefs-row">
+                                        <label class="cfg-prefs-label">Name</label>
+                                        <input class="cfg-prefs-input" id="cfgPrefsName" type="text" maxlength="24" placeholder="Key" autocomplete="off">
+                                    </div>
+                                    <div class="cfg-prefs-row">
+                                        <label class="cfg-prefs-label">Symbol</label>
+                                        <input class="cfg-prefs-input" id="cfgPrefsSymbol" type="text" maxlength="8" placeholder="e.g. ⌘ ★ →" autocomplete="off">
+                                    </div>
+                                    <div class="cfg-prefs-row">
+                                        <label class="cfg-prefs-label">Color</label>
+                                        <div class="cfg-prefs-swatches" id="cfgPrefsSwatches"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Layer pane -->
+                            <div class="cfg-picker-pane cfg-step--hidden" id="cfgPaneLayer">
+                                <div class="cfg-pane-toprow">
+                                    <span class="cfg-pane-heading">Switch To Layer</span>
+                                    <div style="display:flex;gap:6px">
+                                        <button class="cfg-icon-btn" id="cfgLayerAddBtn" title="New layer">+</button>
+                                        <button class="cfg-icon-btn cfg-icon-btn--danger" id="cfgLayerDelBtn" title="Delete selected">−</button>
+                                    </div>
+                                </div>
+                                <div class="cfg-layer-list" id="cfgLayerList"></div>
+                                <div class="cfg-pane-btns">
+                                    <button class="cfg-btn cfg-btn--sm" id="cfgLayerAssign">Assign</button>
+                                </div>
+                            </div>
+
+                            <!-- Bluetooth pane -->
+                            <div class="cfg-picker-pane cfg-step--hidden" id="cfgPaneBluetooth">
+                                <p class="cfg-pane-sub">Switch to a saved Bluetooth device</p>
+                                <div class="cfg-bt-list" id="cfgBtList"></div>
+                            </div>
+
+                            <!-- Sequence pane -->
+                            <div class="cfg-picker-pane cfg-step--hidden" id="cfgPaneSeq">
+                                <div class="cfg-seq-steps" id="cfgSeqSteps">
+                                    <p class="cfg-seq-empty">Press "Add Step" to add your first action</p>
+                                </div>
+                                <div class="cfg-seq-add-row">
+                                    <button class="cfg-btn cfg-btn--sm" id="cfgSeqAddStep">Add Step</button>
+                                </div>
+                                <div class="cfg-pane-btns">
+                                    <button class="cfg-btn cfg-btn--sm" id="cfgSeqAssign">Assign</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Block Builder view -->
+                    <div id="cfgViewBlockBuilder" class="cfg-step--hidden">
+                        <button class="cfg-btn cfg-btn--secondary cfg-btn--sm bb-back-btn" id="bbBackBtn">← Configure</button>
+                        <div class="bb-layer-bar">
+                            <div class="bb-layer-tabs" id="bbLayerTabs"></div>
+                            <button class="bb-layer-add" id="bbLayerAddBtn" title="Add layer">+</button>
+                            <button class="bb-record-btn" id="bbRecordBtn" title="Record a sequence of keypresses">&#9679; Record</button>
+                            <div class="bb-run-indicator" id="bbRunIndicator">
+                                <span class="bb-run-dot"></span>
+                                <span class="bb-run-label" id="bbRunLabel">—</span>
+                            </div>
+                        </div>
+                        <div class="bb-record-banner" id="bbRecordBanner">
+                            <span class="bb-record-dot"></span>
+                            <span class="bb-record-status">Recording — press shortcuts, then click Stop</span>
+                            <div class="bb-record-combos" id="bbRecordCombos"></div>
+                            <button class="bb-record-stop" id="bbRecordStop">&#9632; Stop</button>
+                        </div>
+                        <div class="bb-header-row">
+                            <div class="bb-key-dropdown" id="bbKeyDropdown">
+                                <button class="bb-key-dd-btn" id="bbKeyDdBtn">
+                                    <span class="bb-key-dd-lbl" id="bbKeyDdLbl">Select a key</span>
+                                    <span class="bb-key-dd-arrow">▾</span>
+                                </button>
+                                <div class="bb-key-dd-panel" id="bbKeyDdPanel">
+                                    <div class="bb-mini-kmap" id="bbMiniKmap"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="bbKeyGrid" style="display:none"></div>
+                        <div class="bb-workspace">
+                            <div class="bb-editor">
+                                <div class="bb-palette" id="bbPalette"></div>
+                                <div class="bb-canvas-wrap" id="bbCanvasWrap">
+                                    <div class="bb-canvas-hint" id="bbCanvasHint">Select a key to start building its script</div>
+                                    <div class="bb-canvas" id="bbCanvas"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Build progress -->
+                <div id="cfgStepBuild" class="cfg-step--hidden">
+                    <h2 class="cfg-title" id="cfgBuildTitle">Building Firmware</h2>
+                    <p class="cfg-build-status" id="cfgBuildMsg">Pushing files to GitHub...</p>
+                    <div class="cfg-spinner-wrap" id="cfgSpinnerWrap">
+                        <div class="cfg-spinner"></div>
+                    </div>
+                    <div class="cfg-build-btns">
+                        <a class="cfg-btn cfg-btn--download cfg-step--hidden" id="cfgDownloadBtn">
+                            Download macro_hub.uf2
+                        </a>
+                        <button class="cfg-btn cfg-btn--secondary cfg-step--hidden" id="cfgRestartBtn">
+                            Back to Edit
+                        </button>
+                    </div>
+                    <ol class="cfg-flash-steps cfg-step--hidden" id="cfgFlashSteps">
+                        <li><strong>Double-tap the reset button</strong> on the hub — the LED will pulse to show it's in bootloader mode.</li>
+                        <li>A USB drive named <strong>NICENANO</strong> appears on your computer.</li>
+                        <li><strong>Drag the downloaded <code>macro_hub.uf2</code></strong> onto that drive.</li>
+                        <li>The drive disappears and the hub restarts automatically — you're done.</li>
+                    </ol>
+                </div>
+
+            </div>
+
+            <!-- Custom shortcut modal -->
+            <div class="cfg-modal cfg-step--hidden" id="cfgModal" role="dialog" aria-modal="true" tabindex="-1">
+                <div class="cfg-modal-box">
+                    <p class="cfg-modal-title">Press your shortcut</p>
+                    <div class="cfg-modal-display" id="cfgModalDisplay">—</div>
+                    <p class="cfg-modal-zmk" id="cfgModalZmk"></p>
+                    <div class="cfg-modal-btns">
+                        <button class="cfg-btn cfg-btn--secondary" id="cfgModalCancel">Cancel</button>
+                        <button class="cfg-btn" id="cfgModalSave" disabled>Assign</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete layer confirm -->
+            <div class="cfg-modal cfg-step--hidden" id="cfgConfirmModal" role="dialog" aria-modal="true" tabindex="-1">
+                <div class="cfg-modal-box">
+                    <p class="cfg-modal-title" id="cfgConfirmMsg">Delete this layer?</p>
+                    <div class="cfg-modal-btns">
+                        <button class="cfg-btn cfg-btn--secondary" id="cfgConfirmNo">Cancel</button>
+                        <button class="cfg-btn" style="background:#c0504a" id="cfgConfirmYes">Delete</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="script.js?v=9"></script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+/* ── Signup page styles ─────────────────────────────────────────────────── */
+
+.page--signup-main {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.su-hero {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - var(--header-height, 72px));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.su-hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+
+.su-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(12, 30, 36, 0.78);
+    z-index: 1;
+}
+
+.su-hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.1rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    max-width: 560px;
+    width: 100%;
+}
+
+.su-hero-label {
+    font-family: 'Exo 2', system-ui, sans-serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #ffefd5;
+    letter-spacing: 0.03em;
+    margin: 0;
+}
+
+.su-hero-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+}
+
+.su-hero-input {
+    flex: 0 1 320px;
+    padding: 11px 15px;
+    background: rgba(12, 30, 36, 0.88);
+    border: 1px solid #2a3a50;
+    border-radius: 4px;
+    color: #ffefd5;
+    font-size: 1rem;
+    font-family: 'Rubik', system-ui, sans-serif;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.su-hero-input::placeholder {
+    color: #3a5060;
+}
+
+.su-hero-input:focus {
+    border-color: #7390b9;
+}
+
+.su-hero-btn {
+    padding: 11px 24px;
+    background: transparent;
+    border: 1px solid #7390b9;
+    border-radius: 4px;
+    color: #ffefd5;
+    font-size: 1rem;
+    font-family: 'Exo 2', system-ui, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+}
+
+.su-hero-btn:hover {
+    background: rgba(115, 144, 185, 0.2);
+}
+
+.su-hero-thanks {
+    color: #7390b9;
+    font-size: 1rem;
+    font-family: 'Rubik', system-ui, sans-serif;
+    margin: 0;
+}
+
+.su-hero-error {
+    color: #e08888;
+    font-size: 0.9rem;
+    font-family: 'Rubik', system-ui, sans-serif;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .su-hero-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .su-hero-input {
+        flex: none;
+        width: 100%;
+    }
+    .su-hero-label {
+        font-size: 1.15rem;
+    }
+}

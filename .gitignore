@@ -1,0 +1,35 @@
+# Secrets — never commit
+*.env
+.env.*
+secrets.*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Node / serve cache
+node_modules/
+.cache/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local config
+*.local

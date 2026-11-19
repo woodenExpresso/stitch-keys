@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; form-action 'self' https://script.google.com; frame-ancestors 'none';">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Stay Updated — Stitch Keys</title>
+    <meta name="description" content="Get notified when Stitch Keys launches. Sign up for updates on modular magnetic macro keys you can arrange into any shape.">
+    <meta name="keywords" content="stitch keys, stitchkeys, macro keys updates, modular keyboard news">
+    <meta name="author" content="Stitch Keys">
+    <meta property="og:title" content="Stay Updated — Stitch Keys">
+    <meta property="og:description" content="Get notified when Stitch Keys launches. Modular magnetic macro keys you can arrange into any shape.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Stay Updated — Stitch Keys">
+    <meta name="twitter:description" content="Get notified when Stitch Keys launches.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Exo+2:wght@400;600;700&family=Rubik:wght@400;500&display=swap">
+    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="signup.css?v=1">
+</head>
+<body class="page--signup">
+    <div class="header-fill" aria-hidden="true"></div>
+    <header class="page-header">
+        <button id="menuToggle" class="menu-button" aria-label="Toggle navigation menu">
+            <span class="hamburger"></span>
+        </button>
+        <nav class="page-tabs" aria-label="Site sections">
+            <a href="index.html" class="page-tab">Home</a>
+            <a href="configure.html" class="page-tab">Configure</a>
+            <a href="signup.html" class="page-tab page-tab--active">Stay Updated</a>
+        </nav>
+        <div class="resize-handle header-handle" data-resize="header" aria-hidden="true"></div>
+    </header>
+
+    <div class="app-shell">
+        <div class="nav-bg" id="navBg" aria-hidden="true"></div>
+        <div class="mobile-overlay" id="mobileOverlay" aria-hidden="true"></div>
+        <aside class="side-nav" id="sideNav" aria-hidden="true"></aside>
+
+        <main class="main-content page--signup-main" id="mainContent">
+            <div class="su-hero">
+                <img src="pictures/signup_bg.webp" alt="" class="su-hero-img" aria-hidden="true">
+                <div class="su-hero-overlay"></div>
+                <div class="su-hero-content">
+                    <p class="su-hero-label">Get notified when Stitch Keys launches</p>
+                    <form class="su-hero-form" id="signupPageForm" novalidate>
+                        <input
+                            class="su-hero-input"
+                            type="email"
+                            name="email"
+                            id="signupPageEmail"
+                            placeholder="your@email.com"
+                            autocomplete="email"
+                            required
+                            aria-label="Email address"
+                        >
+                        <button class="su-hero-btn" type="submit">Notify me</button>
+                    </form>
+                    <p class="su-hero-error" id="signupPageError" hidden>Please enter a valid email address.</p>
+                    <p class="su-hero-thanks" id="signupPageThanks" hidden>Thanks! We'll be in touch.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
