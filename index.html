@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; form-action 'self' https://script.google.com; frame-ancestors 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; form-action 'self' https://script.google.com; frame-ancestors 'none'; navigate-to 'self' https://github.com;">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>Stitch Keys — Modular Magnetic Macro Keys</title>
     <meta name="description" content="Stitch Keys are modular magnetic macro keys you can arrange into any shape and assign any shortcut or task to. Shape the way you interact with your electronics.">
@@ -51,11 +51,15 @@
                     <div class="sticky-note__img"><img src="art/how_it_works.png" alt="How it Works"></div>
                     <span class="sticky-note__label">How it Works</span>
                 </a>
-                <a draggable="false" href="#section1" class="sticky-note sticky-note--4">
+                <a draggable="false" href="#download" class="sticky-note sticky-note--4">
+                    <div class="sticky-note__img"><img src="art/future_goals.png" alt="Download"></div>
+                    <span class="sticky-note__label">Download</span>
+                </a>
+                <a draggable="false" href="#section1" class="sticky-note sticky-note--5">
                     <div class="sticky-note__img"><img src="art/future_goals.png" alt="Future Goals"></div>
                     <span class="sticky-note__label">Current Goals</span>
                 </a>
-                <a draggable="false" href="#section2" class="sticky-note sticky-note--5">
+                <a draggable="false" href="#section2" class="sticky-note sticky-note--6">
                     <div class="sticky-note__img"><img src="art/about_us.png" alt="About Us"></div>
                     <span class="sticky-note__label">About Us</span>
                 </a>
@@ -154,6 +158,72 @@
                     </div>
                 </div>
             </section>
+            <section id="download">
+                <h2>Macro Recorder</h2>
+                <p class="dl-intro">Record any sequence of key presses and mouse clicks, edit the timing, then play it back — from any app — with one keystroke. Free desktop app for Windows &amp; Mac.</p>
+
+                <div class="dl-feature-grid">
+                    <div class="dl-feature">
+                        <span class="dl-feature__icon">REC</span>
+                        <div>
+                            <strong>Record &amp; play</strong>
+                            <span>Capture keyboard and mouse events globally, then replay them exactly.</span>
+                        </div>
+                    </div>
+                    <div class="dl-feature">
+                        <span class="dl-feature__icon">ED</span>
+                        <div>
+                            <strong>Edit timing</strong>
+                            <span>Double-click any event to adjust its delay. Reorder, duplicate, or delete rows.</span>
+                        </div>
+                    </div>
+                    <div class="dl-feature">
+                        <span class="dl-feature__icon">2x</span>
+                        <div>
+                            <strong>Repeat &amp; speed</strong>
+                            <span>Loop a macro N times at 0.25× to 4× speed. Add a countdown before it starts.</span>
+                        </div>
+                    </div>
+                    <div class="dl-feature">
+                        <span class="dl-feature__icon">F9</span>
+                        <div>
+                            <strong>Global hotkey</strong>
+                            <span>Press F9 from any application to trigger playback without switching windows.</span>
+                        </div>
+                    </div>
+                    <div class="dl-feature">
+                        <span class="dl-feature__icon">Z</span>
+                        <div>
+                            <strong>Undo &amp; insert</strong>
+                            <span>50-step undo history. Insert key presses or mouse clicks at any position.</span>
+                        </div>
+                    </div>
+                    <div class="dl-feature">
+                        <span class="dl-feature__icon">XY</span>
+                        <div>
+                            <strong>Relative mouse</strong>
+                            <span>Offset all mouse coordinates so your macro works wherever your window is.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dl-buttons">
+                    <a class="dl-btn dl-btn--primary"
+                       href="https://github.com/woodenExpresso/stitch-keys/releases/latest/download/StitchKeys-MacroRecorder-Windows.exe"
+                       target="_blank" rel="noopener noreferrer">
+                        <svg class="dl-btn__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V3a1 1 0 011-1z"/><path d="M3 15a1 1 0 011 1h12a1 1 0 110 2H4a1 1 0 01-1-1v-1a1 1 0 011-1z"/></svg>
+                        Download for Windows
+                    </a>
+                    <a class="dl-btn dl-btn--secondary"
+                       href="https://github.com/woodenExpresso/stitch-keys/releases/latest/download/StitchKeys-MacroRecorder-Mac"
+                       target="_blank" rel="noopener noreferrer">
+                        <svg class="dl-btn__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 2a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V3a1 1 0 011-1z"/><path d="M3 15a1 1 0 011 1h12a1 1 0 110 2H4a1 1 0 01-1-1v-1a1 1 0 011-1z"/></svg>
+                        Download for Mac
+                    </a>
+                </div>
+                <p class="dl-note">Also available on <a href="https://github.com/woodenExpresso/stitch-keys/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a> · Free &amp; open source</p>
+            </section>
+
             <section id="section1">
                 <h2>Future Goals</h2>
                 <div class="fg-images">
